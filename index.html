@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YourDream Render | 3D Візуалізація</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes glitch {
+            0% { text-shadow: 0.05em 0 0 #00fffc, -0.05em -0.025em 0 #fc00ff; }
+            14% { text-shadow: 0.05em 0 0 #00fffc, -0.05em -0.025em 0 #fc00ff; }
+            15% { text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.025em 0 #fc00ff; }
+            49% { text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.025em 0 #fc00ff; }
+            50% { text-shadow: 0.025em 0.05em 0 #00fffc, 0.05em 0 0 #fc00ff; }
+            99% { text-shadow: 0.025em 0.05em 0 #00fffc, 0.05em 0 0 #fc00ff; }
+            100% { text-shadow: -0.025em 0 0 #00fffc, -0.025em -0.025em 0 #fc00ff; }
+        }
+        
+        .grid-bg {
+            background: 
+                linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        
+        .glitch-text {
+            animation: glitch 2s infinite;
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .pulse {
+            animation: pulse 3s ease infinite;
+        }
+        
+        .rotate {
+            animation: rotate 20s linear infinite;
+        }
+        
+        .hexagon {
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        
+        .red-glow {
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+        }
+        
+        .red-glow:hover {
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.9);
+        }
+        
+        .grid-line {
+            position: absolute;
+            background: linear-gradient(90deg, rgba(255,0,0,0) 0%, rgba(255,0,0,0.5) 50%, rgba(255,0,0,0) 100%);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-200 font-sans overflow-x-hidden grid-bg">
+    <!-- Animated background lines -->
+    <div id="lines-container" class="fixed inset-0 overflow-hidden pointer-events-none"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-black bg-opacity-80 backdrop-blur-md border-b border-red-900">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="hexagon w-10 h-10 bg-red-600 flex items-center justify-center red-glow">
+                        <i class="fas fa-cube text-xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold glitch-text">YourDream <span class="text-red-600">Render</span></h1>
+                </div>
+                
+                <div class="hidden md:flex space-x-8">
+                    <a href="#" class="hover:text-red-500 transition duration-300 relative group">
+                        Головна
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-red-600 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#" class="hover:text-red-500 transition duration-300 relative group">
+                        Галерея
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-red-600 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#" class="hover:text-red-500 transition duration-300 relative group">
+                        Послуги
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-red-600 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#" class="hover:text-red-500 transition duration-300 relative group">
+                        Про нас
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-red-600 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#" class="hover:text-red-500 transition duration-300 relative group">
+                        Контакти
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-red-600 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                </div>
+                
+                <button class="md:hidden text-red-500">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-red-900 opacity-10 blur-3xl"></div>
+        
+        <div class="container mx-auto px-6 py-20 z-10">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-12 md:mb-0">
+                    <h2 class="text-4xl md:text-6xl font-bold mb-6">
+                        <span class="block">3D <span class="text-red-600">Візуалізація</span></span>
+                        <span class="block">Ваших <span class="text-red-600">Мрій</span></span>
+                    </h2>
+                    <p class="text-lg mb-8 opacity-90 max-w-lg">
+                        Перетворюємо ваші ідеї на фотореалістичні 3D образи. Архітектура, дизайн інтер'єрів, продуктова візуалізація - ми створюємо майбутнє вже сьогодні.
+                    </p>
+                    <div class="flex space-x-4">
+                        <button class="px-8 py-3 bg-red-600 hover:bg-red-700 text-white rounded-full font-medium transition duration-300 transform hover:scale-105 red-glow">
+                            Почати проект
+                        </button>
+                        <button class="px-8 py-3 border border-red-600 hover:bg-red-900 hover:bg-opacity-30 text-red-400 rounded-full font-medium transition duration-300 transform hover:scale-105">
+                            Детальніше
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="md:w-1/2 relative">
+                    <div class="floating relative">
+                        <div class="absolute -top-10 -left-10 w-32 h-32 rounded-full bg-red-600 opacity-20 blur-xl"></div>
+                        <div class="absolute -bottom-10 -right-10 w-32 h-32 rounded-full bg-red-600 opacity-20 blur-xl"></div>
+                        
+                        <div class="relative bg-gradient-to-br from-black to-gray-900 rounded-2xl overflow-hidden border border-red-900 p-1 red-glow">
+                            <div class="h-80 w-full bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
+                                <div class="rotate">
+                                    <div class="hexagon w-40 h-40 bg-gradient-to-br from-red-900 to-black flex items-center justify-center">
+                                        <i class="fas fa-cube text-5xl text-red-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="hexagon w-24 h-24 bg-red-600 bg-opacity-20 backdrop-blur-sm border border-red-900 flex items-center justify-center">
+                                    <span class="text-red-400 font-bold">3D</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="py-20 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full opacity-5">
+            <div class="absolute top-20 left-1/4 w-64 h-64 rounded-full bg-red-600 blur-3xl"></div>
+            <div class="absolute bottom-20 right-1/4 w-64 h-64 rounded-full bg-red-600 blur-3xl"></div>
+        </div>
+        
+        <div class="container mx-auto px-6 z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                    <span class="text-red-600">Унікальні</span> Можливості
+                </h2>
+                <p class="max-w-2xl mx-auto opacity-80">
+                    Наші інструменти дозволяють створювати вражаючі 3D візуалізації для будь-яких потреб
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gradient-to-b from-gray-900 to-black rounded-xl p-8 border border-gray-800 hover:border-red-600 transition duration-500 transform hover:-translate-y-2">
+                    <div class="hexagon w-16 h-16 bg-red-900 bg-opacity-30 mb-6 flex items-center justify-center mx-auto">
+                        <i class="fas fa-home text-2xl text-red-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-center">Архітектура</h3>
+                    <p class="text-gray-400 text-center">
+                        Фотореалістичні зображення будівель та архітектурних проектів будь-якої складності
+                    </p>
+                </div>
+                
+                <div class="bg-gradient-to-b from-gray-900 to-black rounded-xl p-8 border border-gray-800 hover:border-red-600 transition duration-500 transform hover:-translate-y-2">
+                    <div class="hexagon w-16 h-16 bg-red-900 bg-opacity-30 mb-6 flex items-center justify-center mx-auto">
+                        <i class="fas fa-couch text-2xl text-red-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-center">Інтер'єри</h3>
+                    <p class="text-gray-400 text-center">
+                        Деталізовані 3D моделі інтер'єрів з точним відтворенням матеріалів та освітлення
+                    </p>
+                </div>
+                
+                <div class="bg-gradient-to-b from-gray-900 to-black rounded-xl p-8 border border-gray-800 hover:border-red-600 transition duration-500 transform hover:-translate-y-2">
+                    <div class="hexagon w-16 h-16 bg-red-900 bg-opacity-30 mb-6 flex items-center justify-center mx-auto">
+                        <i class="fas fa-box-open text-2xl text-red-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-center">Продукти</h3>
+                    <p class="text-gray-400 text-center">
+                        Високоякісна візуалізація продуктів для маркетингу та рекламних кампаній
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Gallery Section -->
+    <section class="py-20 bg-gradient-to-b from-black to-gray-900 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-1/4 left-1/4 w-48 h-48 rounded-full bg-red-600 blur-2xl"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full bg-red-600 blur-2xl"></div>
+        </div>
+        
+        <div class="container mx-auto px-6 z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                    Наша <span class="text-red-600">Галерея</span>
+                </h2>
+                <p class="max-w-2xl mx-auto opacity-80">
+                    Подивіться приклади наших останніх робіт у сфері 3D візуалізації
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="group relative overflow-hidden rounded-xl h-64">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                         alt="Архітектурний проект" 
+                         class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    <div class="absolute bottom-0 left-0 p-6 z-20 transform translate-y-10 group-hover:translate-y-0 transition duration-500">
+                        <h3 class="text-xl font-bold">Сучасний будинок</h3>
+                        <p class="text-red-400">Архітектура</p>
+                    </div>
+                </div>
+                
+                <div class="group relative overflow-hidden rounded-xl h-64">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ce1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80" 
+                         alt="Дизайн інтер'єру" 
+                         class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    <div class="absolute bottom-0 left-0 p-6 z-20 transform translate-y-10 group-hover:translate-y-0 transition duration-500">
+                        <h3 class="text-xl font-bold">Лофт інтер'єр</h3>
+                        <p class="text-red-400">Інтер'єр</p>
+                    </div>
+                </div>
+                
+                <div class="group relative overflow-hidden rounded-xl h-64">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    <img src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80" 
+                         alt="Продуктова візуалізація" 
+                         class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    <div class="absolute bottom-0 left-0 p-6 z-20 transform translate-y-10 group-hover:translate-y-0 transition duration-500">
+                        <h3 class="text-xl font-bold">Меблевий гарнітур</h3>
+                        <p class="text-red-400">Продукція</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <button class="px-8 py-3 border border-red-600 hover:bg-red-900 hover:bg-opacity-30 text-red-400 rounded-full font-medium transition duration-300 transform hover:scale-105">
+                    Показати більше
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Process Section -->
+    <section class="py-20 relative overflow-hidden">
+        <div class="container mx-auto px-6 z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                    Наш <span class="text-red-600">Процес</span> Роботи
+                </h2>
+                <p class="max-w-2xl mx-auto opacity-80">
+                    Як ми перетворюємо ваші ідеї на фотореалістичні 3D зображення
+                </p>
+            </div>
+            
+            <div class="relative">
+                <div class="hidden md:block absolute left-1/2 top-0 h-full w-0.5 bg-gradient-to-b from-red-900 via-red-600 to-red-900 transform -translate-x-1/2"></div>
+                
+                <div class="space-y-12 md:space-y-0">
+                    <!-- Step 1 -->
+                    <div class="flex flex-col md:flex-row items-center mb-12">
+                        <div class="md:w-1/2 md:pr-12 mb-8 md:mb-0 order-1 md:order-1">
+                            <div class="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-gray-800 h-full">
+                                <h3 class="text-xl font-bold mb-3 text-red-500">1. Обговорення проекту</h3>
+                                <p class="text-gray-400">
+                                    Ми уважно вислуховуємо ваші побажання, цілі та вимоги до проекту. На цьому етапі формується технічне завдання та обговорюються всі деталі.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="md:w-1/2 md:pl-12 order-2 md:order-2">
+                            <div class="hexagon w-24 h-24 bg-red-600 bg-opacity-20 border border-red-900 flex items-center justify-center mx-auto md:mx-0 red-glow">
+                                <span class="text-3xl font-bold text-red-400">1</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2 -->
+                    <div class="flex flex-col md:flex-row items-center mb-12">
+                        <div class="md:w-1/2 md:pr-12 order-2 md:order-1">
+                            <div class="hexagon w-24 h-24 bg-red-600 bg-opacity-20 border border-red-900 flex items-center justify-center mx-auto md:mx-0 red-glow">
+                                <span class="text-3xl font-bold text-red-400">2</span>
+                            </div>
+                        </div>
+                        <div class="md:w-1/2 md:pl-12 mb-8 md:mb-0 order-1 md:order-2">
+                            <div class="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-gray-800 h-full">
+                                <h3 class="text-xl font-bold mb-3 text-red-500">2. Моделювання</h3>
+                                <p class="text-gray-400">
+                                    На основі наданих креслень, фотографій або ескізів ми створюємо точну 3D модель об'єкта з усіма архітектурними елементами та деталями.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3 -->
+                    <div class="flex flex-col md:flex-row items-center mb-12">
+                        <div class="md:w-1/2 md:pr-12 mb-8 md:mb-0 order-1 md:order-1">
+                            <div class="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-gray-800 h-full">
+                                <h3 class="text-xl font-bold mb-3 text-red-500">3. Текстурування</h3>
+                                <p class="text-gray-400">
+                                    Ми підбираємо та налаштовуємо матеріали, щоб вони максимально точно відповідали реальним аналогам. Це включає кольори, фактури, відблиски та інші властивості.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="md:w-1/2 md:pl-12 order-2 md:order-2">
+                            <div class="hexagon w-24 h-24 bg-red-600 bg-opacity-20 border border-red-900 flex items-center justify-center mx-auto md:mx-0 red-glow">
+                                <span class="text-3xl font-bold text-red-400">3</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4 -->
+                    <div class="flex flex-col md:flex-row items-center">
+                        <div class="md:w-1/2 md:pr-12 order-2 md:order-1">
+                            <div class="hexagon w-24 h-24 bg-red-600 bg-opacity-20 border border-red-900 flex items-center justify-center mx-auto md:mx-0 red-glow">
+                                <span class="text-3xl font-bold text-red-400">4</span>
+                            </div>
+                        </div>
+                        <div class="md:w-1/2 md:pl-12 mb-8 md:mb-0 order-1 md:order-2">
+                            <div class="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-gray-800 h-full">
+                                <h3 class="text-xl font-bold mb-3 text-red-500">4. Освітлення та рендеринг</h3>
+                                <p class="text-gray-400">
+                                    Ми налаштовуємо природнє та штучне освітлення для досягнення максимального фотореалізму. Після чого виконуємо фінальний рендеринг зображення у високій якості.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact Section -->
+    <section class="py-20 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-600 to-transparent"></div>
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-600 to-transparent"></div>
+        </div>
+        
+        <div class="container mx-auto px-6 z-10">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                        Зв'яжіться з <span class="text-red-600">нами</span>
+                    </h2>
+                    <p class="max-w-2xl mx-auto opacity-80">
+                        Готові розпочати свій проект? Напишіть нам, і ми обговоримо всі деталі!
+                    </p>
+                </div>
+                
+                <form class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium mb-2">Ваше ім'я</label>
+                            <input type="text" id="name" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent" placeholder="Введіть ваше ім'я">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium mb-2">Email</label>
+                            <input type="email" id="email" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent" placeholder="Введіть ваш email">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="subject" class="block text-sm font-medium mb-2">Тема</label>
+                        <input type="text" id="subject" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent" placeholder="Тема повідомлення">
+                    </div>
+                    <div>
+                        <label for="message" class="block text-sm font-medium mb-2">Повідомлення</label>
+                        <textarea id="message" rows="5" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent" placeholder="Опишіть ваш проект"></textarea>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="px-8 py-3 bg-red-600 hover:bg-red-700 text-white rounded-full font-medium transition duration-300 transform hover:scale-105 red-glow">
+                            Надіслати повідомлення
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-black py-12 border-t border-gray-900">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-2 mb-6 md:mb-0">
+                    <div class="hexagon w-10 h-10 bg-red-600 flex items-center justify-center red-glow">
+                        <i class="fas fa-cube text-xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold">YourDream <span class="text-red-600">Render</span></h2>
+                </div>
+                
+                <div class="flex space-x-6 mb-6 md:mb-0">
+                    <a href="#" class="text-gray-400 hover:text-red-500 transition duration-300">
+                        <i class="fab fa-facebook-f text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-red-500 transition duration-300">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-red-500 transition duration-300">
+                        <i class="fab fa-behance text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-red-500 transition duration-300">
+                        <i class="fab fa-artstation text-xl"></i>
+                    </a>
+                </div>
+                
+                <div class="text-gray-500 text-sm">
+                    &copy; 2023 YourDream Render. Всі права захищені.
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Create animated background lines
+        document.addEventListener('DOMContentLoaded', function() {
+            const linesContainer = document.getElementById('lines-container');
+            
+            // Create 20 random lines
+            for (let i = 0; i < 20; i++) {
+                const line = document.createElement('div');
+                line.className = 'grid-line';
+                
+                // Random position and size
+                const top = Math.random() * 100;
+                const left = Math.random() * 100;
+                const width = 100 + Math.random() * 300;
+                const height = 1 + Math.random() * 2;
+                const opacity = 0.1 + Math.random() * 0.3;
+                const rotation = Math.random() * 360;
+                
+                line.style.top = `${top}%`;
+                line.style.left = `${left}%`;
+                line.style.width = `${width}px`;
+                line.style.height = `${height}px`;
+                line.style.opacity = opacity;
+                line.style.transform = `rotate(${rotation}deg)`;
+                
+                // Animation
+                line.style.animation = `pulse ${3 + Math.random() * 7}s infinite`;
+                
+                linesContainer.appendChild(line);
+            }
+            
+            // Add floating animation to all elements with .floating class
+            const floatingElements = document.querySelectorAll('.floating');
+            floatingElements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.2}s`;
+            });
+            
+            // Add hover effect to hexagons
+            const hexagons = document.querySelectorAll('.hexagon');
+            hexagons.forEach(hex => {
+                hex.addEventListener('mouseenter', () => {
+                    hex.classList.add('red-glow');
+                });
+                hex.addEventListener('mouseleave', () => {
+                    hex.classList.remove('red-glow');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
